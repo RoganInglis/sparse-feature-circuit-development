@@ -7,9 +7,11 @@ from torch import nn
 
 @dataclass
 class SparseAutoencoderOutput:
-    x_hat: TensorType["batch", "input_size"]
-    f: TensorType["batch", "num_features"]
-    loss: Optional[TensorType["batch"], None]
+    x_hat: TensorType["batch", "input_size"]  # Reconstruction of input
+    f: TensorType["batch", "num_features"]  # Encoded input
+    loss: Optional[TensorType["batch"]] = None
+    reconstruction_loss: Optional[TensorType["batch"]] = None
+    sparsity_loss: Optional[TensorType["batch"]] = None
 
 
 class SparseAutoencoder(nn.Module):
@@ -28,17 +30,22 @@ class SparseAutoencoder(nn.Module):
     def decode(self, f: TensorType["batch", "num_features"]) -> TensorType["batch", "input_size"]:
         return self.decoder(f) + self.input_bias
 
-    def loss(self, x, x_hat, f):
-        reconstruction_loss = nn.functional.mse_loss(x_hat, x, reduction="mean")
-        sparsity_loss = self.lambda_ * torch.mean(torch.abs(f))
-        return reconstruction_loss + sparsity_loss
-
-    def forward(self, x: TensorType["batch", "input_size"], return_loss: bool = False) -> SparseAutoencoderOutput:
+    def forward(self, x: TensorType["batch", "input_size"], return_loss: bool = True) -> SparseAutoencoderOutput:
         f = self.encode(x)
         x_hat = self.decode(f)
 
         loss = None
+        reconstruction_loss = None
+        sparsity_loss = None
         if return_loss:
-            loss = self.loss(x, x_hat, f)
+            reconstruction_loss = nn.functional.mse_loss(x_hat, x, reduction="mean")
+            sparsity_loss = self.lambda_ * torch.mean(torch.abs(f))
+            loss = reconstruction_loss + sparsity_loss
 
-        return SparseAutoencoderOutput(x_hat=x_hat, f=f, loss=loss)
+        return SparseAutoencoderOutput(
+            x_hat=x_hat,
+            f=f,
+            loss=loss,
+            reconstruction_loss=reconstruction_loss,
+            sparsity_loss=sparsity_loss
+        )

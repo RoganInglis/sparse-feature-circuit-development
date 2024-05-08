@@ -153,3 +153,5 @@ configs/local/default.yaml
 # Aim logging
 .aim
 /tests/pythia-70m-deduped/
+/notebooks/wandb/
+/notebooks/checkpoints/
