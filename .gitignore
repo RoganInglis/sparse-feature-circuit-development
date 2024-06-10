@@ -155,3 +155,10 @@ configs/local/default.yaml
 /tests/pythia-70m-deduped/
 /notebooks/wandb/
 /notebooks/checkpoints/
+/checkpoints/
+/scripts/checkpoints/
+/notebooks/features_during_training/
+/notebooks/activation_data.pkl
+/exportToHTML/
+/scripts/wandb/
+/wandb/
